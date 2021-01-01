@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+
+<head>
+  <title>High Frequency Radar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" http-equiv="content-type">
+  <meta name="keywords" content="hfradar,rtv,surface currents,ocean currents">
+  <meta name="copyright" content="©2020 Coastal Observing Research and Development Center">
+
+  <link rel="stylesheet" href="css/index.css" />
+  <script src="js/index.js"></script>
+
+  <!--UIKit Dependencies-->
+  <link rel="stylesheet" href="../node_modules/uikit/dist/css/uikit.min.css" />
+  <script src="../node_modules/uikit/dist/js/uikit.min.js"></script>
+  <script src="../node_modules/uikit/dist/js/uikit-icons.min.js"></script>
+
+  <!--Google Maps and HFR API-->
+  <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyD4u52jjez_Lk1Kyj8jeRKNw-ik5Q8-AdI&amp;v=3"></script>
+  <script type="text/javascript" src="http://cordc.ucsd.edu/js/RTV/RTVMapType.js"></script>
+  
+  <script>
+
+    // The GMap3 object
+    var map = null;
+
+    // The RTVMapType object.
+    var overlay = null;
+
+
+    /**
+     * Initialize the Google map.
+     */
+    function initialize() {
+      var opts = {
+        center: new google.maps.LatLng(34.4, -119.8),
+        zoom: 8,
+        disableDefaultUI: true,
+        scaleControl: false,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+          style: google.maps.MapTypeControlStyle.SMALL,
+          position: google.maps.ControlPosition.RIGHT_BOTTOM,
+        },
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        zoomControl: true,
+        zoomControlOptions: {
+          position: google.maps.ControlPosition.LEFT_BOTTOM,
+          style: google.maps.ZoomControlStyle.SMALL
+        },
+        controlSize: 20
+      };
+      map = new google.maps.Map(document.getElementById("map_canvas"), opts);
+
+
+
+      /**
+       * Get reference to the new overlay, so we can monitor for
+       * state (configuration) changes.
+       */
+      overlay = new RTVMapType(map);
+
+      // Show user the latest timestamp when map layer loads
+      google.maps.event.addListener(overlay, 'timechange', function (ts) {
+        displayTimestamp(ts);
+      });
+
+      // Display date and current and utc times
+      displayDate();
+      displayCurTime();
+      setInterval(displayCurTime, 1000);
+      displayUTCTime();
+      setInterval(displayUTCTime, 1000);
+
+
+      // Add overlay to map.
+      map.overlayMapTypes.push(overlay);
+
+      // When a user clicks on the map, an object representing
+      // the nearest neighbor of the click will be returned.
+      // The object will have properties: lat, lng, u, v.
+      // With u and v in 'cm/s'.
+      google.maps.event.addListener(map, 'click', function (mouseEvt) {
+        overlay.getVectorData(mouseEvt.latLng, lluvAtClick);
+      });
+
+      // monitor form changes to instantly update map settings.
+      initFormListeners();
+
+      // shortcut to get image bar to render with current settings
+      doSubmit();
+    }
+
+    /**
+     * Update the display whenever a form setting is changed.
+     */
+    function initFormListeners() {
+      var inp = document.getElementsByTagName("input");
+      for (var i = 0, n = inp.length; i < n; i++) {
+        inp[i].onchange = doSubmit;
+        if (inp[i].getAttribute("type") == "radio") {
+          inp[i].onclick = function (e) {
+            e = (!e) ? window.event : e;
+            var t = (e.target) ? e.target : e.srcElement;
+            t.blur();
+          }
+        }
+      }
+      var inp = document.getElementsByTagName("select");
+      for (var i = 0, n = inp.length; i < n; i++) {
+        inp[i].onchange = doSubmit;
+      }
+    }
+
+
+    /**
+     * Action code to handle the result of onclick.  
+     * Note, a timeout is needed between clicks to prevent capturing 
+     * double-click events.  I expected this to be implemented by 
+     * Google, but it's been years, and no support.
+     */
+    function lluvAtClick(obj) {
+      alert('Latitude: ' + obj.lat + ', Longitude: ' + obj.lng + '\n' + 'Current Vector: U: ' + obj.u + 'cm/s, V: ' + obj.v + 'cm/s');
+    }
+
+    /**
+     * Get the value of radio, drop-down or text input without fuss.
+     */
+    function getFormValue(field) {
+      var frm = document.forms['something'];
+      if (!frm[field]) {
+        return null;
+      }
+      if (typeof (frm[field].value) != "undefined") {
+        return frm[field].value;
+      }
+      if (frm[field].length != "undefined") {
+        for (var i = 0, n = frm[field].length; i < n; i++) {
+          if (frm[field][i].checked) {
+            return frm[field][i].value;
+          }
+        }
+      }
+      return null;
+    }
+
+    function displayDate() {
+      var date = new Date();
+      document.getElementById("date").innerHTML = date.toDateString();
+    }
+
+    /**
+     * Display the current and UTC time and set interval
+     */
+     function displayCurTime() {
+      var date = new Date();
+      var abbrev = String(String(date).split("(")[1]).split(")")[0];
+      document.getElementById("cur-time").innerHTML = date.toLocaleTimeString() + " (" + abbrev + ")";
+    }
+
+    function displayUTCTime() {
+      var date = new Date();
+      var ifZeroSec = "";
+      var ifZeroMin = "";
+      var ifZeroHour = "";
+      if(date.getUTCSeconds() < 10){
+        ifZeroSec = "0";
+      }
+      if(date.getUTCMinutes() < 10){
+        ifZeroMin = "0";
+      }
+      if(date.getUTCHours() < 10){
+        ifZeroHour = "0";
+      }
+      document.getElementById("utc-time").innerHTML = "  " + ifZeroHour + date.getUTCHours() + ":" + ifZeroMin + date.getUTCMinutes() + ":" + ifZeroSec + date.getUTCSeconds() + " (GMT)";
+    }
+
+    /**
+     * Just something to show the user what time is being displayed.
+     */
+    function displayTimestamp(ts) {
+      var frm = document.forms["something"];
+      var d = new Date(Number(ts) * 1000);
+      frm["ts"].disabled = false;
+      frm["ts"].value = d.gmstrftime("%Y-%m-%d %H:%M:%S UTC");
+      frm["ts"].disabled = true;
+    }
+
+    /**
+     * Example accessor for updating time without extending 
+     * beyong most recent available.
+     */
+    function setTime(dt) {
+      ts = overlay.getLatestTimestamp();
+      overlay.setTimestamp(Math.min(ts, overlay.getTimestamp() + dt));
+    }
+
+    /**
+     * Example accessors for updating rtv configuration.
+     
+    function doSubmit() {
+      if (getFormValue('pfx') == 'h') {
+        overlay.setHourly();
+      } else {
+        overlay.setAveraged();
+      }
+      overlay.setResolution(getFormValue('res'));
+      overlay.setColorRange(getFormValue('min'), getFormValue('max'));
+      overlay.setColorScheme(getFormValue('colors'));
+      overlay.setTimestamp(
+        Math.min(overlay.getLatestTimestamp(), overlay.getTimestamp())
+      );
+
+      var img = document.getElementById("colorbar");
+      img.src = overlay.getColorbarUrl();
+    }
+    */
+
+    /**
+     * Accessors for updating rtv configuration
+     */
+
+    function changePFX() {
+      if (getFormValue('pfx') == 'h') {
+        overlay.setHourly();
+      } else {
+        overlay.setAveraged();
+      }
+    }
+
+    function changeResolution() {
+      overlay.setResolution(getFormValue('res'));
+    }
+
+    function changeColorbarUnit() {
+      var img = document.getElementById("colorbar");
+      var curUnit = getFormValue('select_unit');
+      document.getElementById('unit-text').innerHTML = curUnit;
+
+      img.src = overlay.getColorbarUrl().replace('cm/s', curUnit);
+      if(curUnit != 'cm/s') {
+        alert("Still need to change vectors to reflect units!");
+      }
+      /**
+       * cm/s value=1
+       * m/s value=100
+       * kph value=27.77777778
+       * kts value=51.44444444
+       * mph value=44.70400
+       * ft/s value=30.48
+       * in/s value=2.54
+       */
+    }
+
+    function changeColorScheme()  {
+      overlay.setColorScheme(getFormValue('colors'));
+      changeColorbarUnit();
+    }
+
+    function changeColorRange() {
+      overlay.setColorRange(getFormValue('min'), getFormValue('max'));
+      changeColorbarUnit();
+    }
+
+    /** Example colorbar url
+     * https://cordc.ucsd.edu/projects/mapping/maps/img/php/cb.php?range=0,50&amp;scheme=4&amp;width=204&amp;height=15&amp;
+     * padding=15,8&amp;title=Current%20Strength%20%28cm/s%29&amp;font_size=10&amp;ticks=6
+     */
+
+    function doSubmitColor() {
+      changeColorScheme();
+      changeColorRange();
+      changeColorbarUnit();
+    }
+  </script>
+</head>
+
+<body onload="initialize()" style="overflow: hidden">
+  <!--Map-->
+    <div id="map_canvas" style="z-index: -1; width: 100vw; height: 100vh; float: left; top: 0px; overflow: hidden; position: absolute;"></div>
+  
+  <!--Title Bar-->
+  
+  <!--<div class= "uk-background-muted" id="title_bar" style="width: 100vw; height: 4vh; text-align:center; top: 0px; position: relative; overflow: hidden;">
+    <p class="uk-text-muted">High Frequency Radar Map - Washburn Lab</p>
+  </div> -->
+
+
+  <!--Nav bar-->
+  <div>
+    <div class="uk-position-relative">
+      <nav class="uk-navbar-container" uk-navbar="mode: click;">
+        
+        <!--Nav Bar Left-->
+        <div class="uk-navbar-left">
+          <ul class="uk-navbar-nav">
+            <li>
+              <button class="uk-button uk-button-default uk-button-small uk-margin-small-left uk-margin-top uk-margin-bottom" type="button" uk-toggle="target: #left-slide">Control Panel</button>
+            </li>
+        </div>
+      
+
+        <!--Logo-->
+        <div class="uk-navbar-center">
+          <a class="uk-navbar-item uk-logo" href="#">
+            <img style="height: 2vh" src="https://sccoos.org/wp-content/uploads/2020/06/cropped-SCCOOS_LOGO_white_medium-1-1.png" alt="logo">
+          </a>
+        </div>
+
+        <!--Nav Bar Right-->
+        <div class="uk-navbar-right">
+          <ul class="uk-navbar-nav">
+            <li>
+              <button class="uk-button uk-button-default uk-button-small uk-margin-small-right" type="button" href="#">Settings</button>
+              <div class="uk-navbar-dropdown" uk-drop="boundary: #navbar; mode: click">
+                <ul class="uk-nav uk-navbar-dropdown-nav">
+                  <li class="uk-active"><a href="#">Active</a></li>
+                  <li><a href="#">About the Washburn Lab</a></li>
+                  <li><a href="#">Current Vector</a></li>
+                  <li><a href="#">Saved HFR Locations</a></li>
+                  <li class="uk-nav-header">Header</li>
+                  <li><a href="#">Documentation</a></li>
+                  <li><a href="#">How to Use this App</a></li>
+                  <li class="uk-nav-divider"></li>
+                  <li><a href="#">Item</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <!--End Nav Bar-->
+
+    <!--Nav Bar Left Slide-->
+    <div id="left-slide" uk-offcanvas="overlay: true; mode: slide;">
+      <div class="uk-offcanvas-bar uk-width-5-6">
+          <button class="uk-offcanvas-close" type="button" uk-close></button>
+          <br>
+          <ul class="uk-nav uk-nav-default">
+              <!--Date and Time-->
+              <li class="uk-active"><a id="date" href="#">Date</a></li>
+              <ul class="uk-nav-sub">
+                  <li>Local:  <span id="cur-time"></span></li>
+                  <li>UTC:    <span id="utc-time"></span></li>
+              </ul>
+              <li class="uk-nav-divider"></li>
+
+              <!--Control Panel-->
+              <li class="uk-nav-header uk-text-medium">Control Panel</li>
+              <br>
+              
+              <ul uk-accordion="multiple: true">
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">RTV Products</a>
+                  <div class="uk-accordion-content">
+                    <p>Hello World</p>
+                  </div>
+                </li>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Overlays</a>
+                  <div class="uk-accordion-content">
+                    <p>Hello World</p>
+                  </div>
+                </li>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Colorbar</a>
+                  <div class="uk-accordion-content uk-margin-small-left">
+                    <form name="something" method="post" action="javascript:doSubmitColor()">
+                      <img class="uk-margin-left"
+                        src="https://cordc.ucsd.edu/projects/mapping/maps/img/php/cb.php?range=0,50&amp;scheme=4&amp;width=204&amp;height=15&amp;padding=15,8&amp;title=Current%20Strength%20%28cm/s%29&amp;font_size=10&amp;ticks=6"
+                        id="colorbar" alt="">
+                        <br><br>
+                        <div class="uk-margin-left">
+                          Color Scheme: <select class="uk-select uk-form-width-medium" name="colors" onchange="changeColorScheme()">
+                            <option value="0" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=0&amp;bg=0x7fffffff&amp;ticks=0">Jet</option>
+                            <option value="1" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=1&amp;bg=0x7fffffff&amp;ticks=0">Heat</option>
+                            <option value="3" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=3&amp;bg=0x7fffffff&amp;ticks=0">Cold</option>
+                            <option value="4" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=4&amp;bg=0x7fffffff&amp;ticks=0" selected="selected">Default</option>
+                            <option value="2" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=2&amp;bg=0x7fffffff&amp;ticks=0">Bright Default</option>
+                            <option value="5" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=5&amp;bg=0x7fffffff&amp;ticks=0">Purple-Orange</option>
+                            <option value="6" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=6&amp;bg=0x7fffffff&amp;ticks=0">Blue-Red</option>
+                            <option value="7" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=7&amp;bg=0x7fffffff&amp;ticks=0">Blue-Red-2</option>
+                            <option value="8" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=8&amp;bg=0x7fffffff&amp;ticks=0">Ocean</option>
+                            <option value="9" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=9&amp;bg=0x7fffffff&amp;ticks=0">Grayscale</option>
+                            <option value="10" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=10&amp;bg=0x7fffffff&amp;ticks=0">Thermal</option>
+                            <option value="11" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=11&amp;bg=0x7fffffff&amp;ticks=0">Heatmap</option>
+                            <option value="12" title="img/php/cb.php?width=40&amp;height=15&amp;scheme=12&amp;bg=0x7fffffff&amp;ticks=0">Stoplight</option>
+                        </select>
+                      </div>
+                      <br>
+                      <div class="uk-margin-left">
+                        Colorbar range (<span id="unit-text">cm/s</span>):
+                        <br>
+                        <span class="uk-margin-left-large">min
+                          <input class="uk-input uk-form-width-xsmall" type="text" size="3" value="0" name="min" onchange="changeColorRange()">
+                          &nbsp; max 
+                          <input class="uk-input uk-form-width-xsmall" type="text" size="3" value="50" name="max" onchange="changeColorRange()">
+                          &nbsp;
+                          <select name="select_unit" class="uk-select uk-form-width-xsmall" onchange="changeColorbarUnit()">
+                            <option value="cm/s" selected="selected">cm/s</option>
+                            <option value="m/s">m/s</option>
+                            <option value="kph">kph</option>
+                            <option value="kts">kts</option>
+                            <option value="mph">mph</option>
+                            <option value="ft/s">ft/s</option>
+                            <option value="in/s">in/s</option>
+                          </select>
+                        </span>
+                        <br>
+                      </div>
+                      <!--<input class="uk-button-small uk-button-primary uk-margin-large-left" type="submit" value="Update">-->
+                    </form>
+                  </div>
+                </li>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Coordinate Locator</a>
+                  <div class="uk-accordion-content">
+                    <p>Hello World</p>
+                  </div>
+                </li>
+              </ul>
+              
+              <li>
+                    <!--
+                          
+                            <br>
+                            <input type="text" name="ts" size="25" value="Waiting..." disabled="">
+                            <br>
+                            <a href="#" onclick="setTime(-3600);return false">-1 Hour</a> &nbsp;
+                            <a href="#" onclick="setTime(+3600);return false">+1 Hour</a>
+                            <br>
+                            <input type="submit" value="Update">
+                          </form>
+                  -->
+              </li>
+        </ul>
+      </div>
+  </div>
+
+  <!--Card?-->
+  <!--
+  <div class="uk-card uk-card-small uk-card-default uk-position-bottom-left uk-width-1-3" style="position: absolute; bottom: 2vh; left: 1vw">
+    <div class="uk-card-header">
+      <h6 class="uk-card-title">Title here</h6>
+  </div>
+  <div class="uk-card-body">
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+</div>
+  </div>-->
+
+</body>
+</html>
