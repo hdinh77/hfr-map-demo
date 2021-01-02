@@ -4,6 +4,7 @@
   "description": "You can use the [editor on GitHub](https://github.com/hdinh77/hfr-map-demo/edit/main/README.md) to maintain and preview the content for your website in Markdown files.",
   "main": "index.js",
   "dependencies": {
+    "http-server": "^0.12.3",
     "uikit": "^3.6.5"
   },
   "devDependencies": {},
