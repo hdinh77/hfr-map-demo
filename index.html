@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" http-equiv="content-type">
   <meta name="keywords" content="hfradar,rtv,surface currents,ocean currents">
   <meta name="copyright" content="©2020 Coastal Observing Research and Development Center">
+  <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
 
@@ -48,7 +49,7 @@
             style: google.maps.MapTypeControlStyle.SMALL,
             position: google.maps.ControlPosition.RIGHT_BOTTOM,
           },
-          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          mapTypeId: google.maps.MapTypeId.TERRAIN,
           zoomControl: true,
           zoomControlOptions: {
             position: google.maps.ControlPosition.LEFT_BOTTOM,
@@ -67,10 +68,9 @@
         overlay = new RTVMapType(map);
   
         // Show user the latest timestamp when map layer loads
-        /*
         google.maps.event.addListener(overlay, 'timechange', function (ts) {
           displayTimestamp(ts);
-        });*/
+        });
   
         // Display date and current and utc times
         displayDate();
@@ -92,7 +92,7 @@
         });
   
         // shortcut to get image bar to render with current settings
-        doSubmit();
+        doSubmitColor();
       }
   
       /**
@@ -150,44 +150,24 @@
       /**
        * Just something to show the user what time is being displayed.
        */
-      /*
       function displayTimestamp(ts) {
-        var frm = document.forms["something"];
+        var frm = document.forms["timestep"];
         var d = new Date(Number(ts) * 1000);
+        console.log(ts + ", " + d);
         frm["ts"].disabled = false;
-        frm["ts"].value = d.gmstrftime("%Y-%m-%d %H:%M:%S UTC");
+        frm["ts"].value = d.gmstrftime("%m-%d-%Y %H:%M:%S UTC");
+        console.log(frm["ts"].value);
         frm["ts"].disabled = true;
-      }*/
+      }
   
       /**
        * Example accessor for updating time without extending 
        * beyong most recent available.
        */
-      function setTime(dt) {
+      function incrementTime(dt) {
         ts = overlay.getLatestTimestamp();
+        console.log("timestamp: " + overlay.getTimestamp());
         overlay.setTimestamp(Math.min(ts, overlay.getTimestamp() + dt));
-      }
-  
-      /**
-       * Example accessors for updating rtv configuration.
-       */
-      function doSubmit() {
-        /*if (getFormValue('pfx') == 'h') {
-          overlay.setHourly();
-        } else {
-          overlay.setAveraged();
-        }
-        overlay.setResolution(getFormValue('res'));
-        */
-        overlay.setColorRange(getFormValueColorbar('min'), getFormValueColorbar('max'));
-        overlay.setColorScheme(getFormValueColorbar('colors'));
-        /*overlay.setTimestamp(
-          Math.min(overlay.getLatestTimestamp(), overlay.getTimestamp())
-        );
-        */
-  
-        var img = document.getElementById("colorbar");
-        img.src = overlay.getColorbarUrl();
       }
   
       /**
@@ -321,6 +301,32 @@
         changeColorRange();
         changeUnit();
       }
+    
+    /**
+       * Center the map at given latitude/longitude
+       */
+
+    function setCoordinates() {
+      var frm = document.forms['coordinates'];
+      if (!frm) {
+        return null;
+      }
+
+      console.log("(" + frm['lat'].value + ", " + frm['long'].value + ")");
+      
+      if(frm['lat'].value != "" && frm['long'].value != "") {
+        map.setZoom(11);
+        map.setCenter({lat: parseFloat(frm['lat'].value),
+                      lng: parseFloat(frm['long'].value)});
+      }
+    }
+
+    function setCoordinatesHome() {
+      alert("button still crashing");
+      map.setZoom(8);
+      map.setCenter({lat: 34.4, lng: -119.8});
+    }
+
     </script>
 </head>
 
@@ -392,6 +398,73 @@
               <br>
               
               <ul uk-accordion="multiple: true">
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Timestep</a>
+                  <div class="uk-accordion-content">    
+                          <form name="timestep" method="post">
+                            <div class="uk-margin-left">
+                              <input class="uk-input uk-form-width-medium" type="text" name="ts" size="25" value="Waiting..." disabled="">
+                              <br>
+                              <a href="#" onclick="incrementTime(-86400);return false">-1 Day</a> &nbsp;
+                              <a class="uk-margin-small-right" href="#" onclick="incrementTime(-3600);return false">-1 Hour</a> &nbsp;
+                              <a href="#" onclick="incrementTime(+3600);return false">+1 Hour</a> &nbsp;
+                              <a href="#" onclick="incrementTime(+86400);return false">+1 Day</a>
+                            </div>
+                          </form>
+                      <!--
+                        <div id="meta_timestep">
+                          <span onclick="javascript:time_advanceSeconds(-86400);" style="color: rgb(0, 0, 255); cursor: pointer;">« -1 Day</span> &nbsp;
+                          <span onclick="javascript:time_advanceSeconds(-3600);" style="color: rgb(0, 0, 255); cursor: pointer;"> -1 Hour</span> &nbsp;
+                          <span id="t0_sp">2021-01-02 08:00:00</span> &nbsp;
+                        <select name="tzo" id="tzoSel">
+                          <option value="-43200">-12:00</option>
+                          <option value="-39600">-11:00</option>
+                          <option value="-36000">-10:00</option>
+                          <option value="-34200">-09:30</option>
+                          <option value="-32400">-09:00</option>
+                          <option value="-28800">-08:00</option>
+                          <option value="-25200">-07:00</option>
+                          <option value="-21600">-06:00</option>
+                          <option value="-18000">-05:00</option>
+                          <option value="-16200">-04:30</option>
+                          <option value="-14400">-04:00</option>
+                          <option value="-12600">-03:30</option>
+                          <option value="-10800">-03:00</option>
+                          <option value="-7200">-02:00</option>
+                          <option value="-3600">-01:00</option>
+                          <option value="0" selected="selected">+00:00</option>
+                          <option value="+3600">+01:00</option>
+                          <option value="+7200">+02:00</option>
+                          <option value="+10800">+03:00</option>
+                          <option value="+12600">+03:30</option>
+                          <option value="+14400">+04:00</option>
+                          <option value="+16200">+04:30</option>
+                          <option value="+18000">+05:00</option>
+                          <option value="+19800">+05:30</option>
+                          <option value="+20700">+05:45</option>
+                          <option value="+21600">+06:00</option>
+                          <option value="+23400">+06:30</option>
+                          <option value="+25200">+07:00</option>
+                          <option value="+28800">+08:00</option>
+                          <option value="+31500">+08:45</option>
+                          <option value="+32400">+09:00</option>
+                          <option value="+34200">+09:30</option>
+                          <option value="+36000">+10:00</option>
+                          <option value="+37800">+10:30</option>
+                          <option value="+39600">+11:00</option>
+                          <option value="+41400">+11:30</option>
+                          <option value="+43200">+12:00</option>
+                          <option value="+45900">+12:45</option>
+                          <option value="+46800">+13:00</option>
+                          <option value="+50400">+14:00</option>
+                        </select> from UTC &nbsp;
+                          <span id="t0" style="display:none;">1609603200</span>
+                          <span onclick="javascript:time_advanceSeconds(+3600);" style="color: rgb(0, 0, 255); cursor: pointer;">+1 Hour </span>&nbsp;
+                          <span onclick="javascript:time_advanceSeconds(+86400);" style="color: rgb(0, 0, 255); cursor: pointer;">+1 Day »</span>
+                        </div>
+
+                      -->
+                  </div>
+                </li>
                 <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">RTV Products</a>
                   <div class="uk-accordion-content">
                     <form name="products" method="post">
@@ -470,24 +543,24 @@
                 </li>
                 <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Coordinate Locator</a>
                   <div class="uk-accordion-content">
+                    <form name="coordinates" method="post">
+                      <div class="uk-margin-left">
+                        Latitude:  <input class="uk-input uk-form-width-small" name="lat" onchange="setCoordinates()" type="number" step="0.001" placeholder="Latitude">
+                        <br><br>
+                        Longitude:  <input class="uk-input uk-form-width-small" name="long" onchange="setCoordinates()" type="number" step="0.001" placeholder="Longitude">
+                        <br><br>
+                        <button class="uk-button uk-button-primary uk-button-small" onclick="setCoordinatesHome()">Home Coordinates</button>
+                      </div>  
+                    </form>
+                  </div>
+                </li>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Stations</a>
+                  <div class="uk-accordion-content">
                     <p>Hello World</p>
                   </div>
                 </li>
               </ul>
-              
-              <li>
-                    <!--
-                          <form>
-                            <br>
-                            <input type="text" name="ts" size="25" value="Waiting..." disabled="">
-                            <br>
-                            <a href="#" onclick="setTime(-3600);return false">-1 Hour</a> &nbsp;
-                            <a href="#" onclick="setTime(+3600);return false">+1 Hour</a>
-                            <br>
-                            <input type="submit" value="Update">
-                          </form>
-                        -->
-              </li>
+
         </ul>
       </div>
     </div>
