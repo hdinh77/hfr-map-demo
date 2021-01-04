@@ -2,11 +2,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
 
 <head>
-  <title>High Frequency Radar</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" http-equiv="content-type">
+  <title>High Frequency Radar Map</title>
+  <meta http-​equiv="ScreenOrientation" content="autoRotate:disabled">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" http-equiv="content-type">
   <meta name="keywords" content="hfradar,rtv,surface currents,ocean currents">
   <meta name="copyright" content="©2020 Coastal Observing Research and Development Center">
-  <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
 
@@ -28,6 +28,12 @@
       window.addEventListener('load', (event) => {
           console.log('page is fully loaded');
       });
+
+      // screen lock
+      screen.lockOrientation("portrait-primary");
+      screen.mozLockOrientation("portrait-primary");
+      screen.msLockOrientation("portrait-primary");
+
       // The GMap3 object
       var map = null;
   
@@ -50,11 +56,13 @@
             position: google.maps.ControlPosition.RIGHT_BOTTOM,
           },
           mapTypeId: google.maps.MapTypeId.TERRAIN,
+          /*
           zoomControl: true,
           zoomControlOptions: {
             position: google.maps.ControlPosition.LEFT_BOTTOM,
             style: google.maps.ZoomControlStyle.SMALL
           },
+          */
           controlSize: 20
         };
         map = new google.maps.Map(document.getElementById("map_canvas"), opts);
@@ -88,7 +96,8 @@
         // The object will have properties: lat, lng, u, v.
         // With u and v in 'cm/s'.
         google.maps.event.addListener(map, 'click', function (mouseEvt) {
-          overlay.getVectorData(mouseEvt.latLng, lluvAtClick);
+          // overlay.getVectorData(mouseEvt.latLng, lluvAtClick);
+          overlay.getVectorData(mouseEvt.latLng, displayVectorInfo);
         });
   
         // shortcut to get image bar to render with current settings
@@ -322,11 +331,35 @@
     }
 
     function setCoordinatesHome() {
-      alert("button still crashing");
       map.setZoom(8);
       map.setCenter({lat: 34.4, lng: -119.8});
+      var frm = document.forms['coordinates'];
+      frm['lat'].value = null;
+      frm['long'].value = null;
     }
 
+    function displayVectorInfo(obj) {
+      console.log(obj);
+        var pfx = "";
+        if(document.getElementById('hourly').checked == true) {
+          pfx = "Hourly";
+        }else {
+          pfx = "Averaged";
+        }
+
+        var multiplier = getUnitMultiplier();
+        var unit = getFormValueColorbar('select_unit');
+
+      document.getElementById("curVectorInfo").style.display = "block";
+      document.getElementById("curCoord").innerHTML = '(' + obj.lat + ', ' + obj.lng + ')';
+      document.getElementById("curVector").innerHTML = '(' + unit + '): u: ' + Number.parseFloat(obj.u / multiplier).toPrecision(3) + ', v: ' + Number.parseFloat(obj.v / multiplier).toPrecision(3);
+      document.getElementById("curPFX").innerHTML = pfx;
+      document.getElementById("curRes").innerHTML = getFormValueProducts('select_res');
+    }
+
+    function hideVectorInfo() {
+      document.getElementById("curVectorInfo").style.display = "none";
+    }
     </script>
 </head>
 
@@ -361,15 +394,12 @@
               <button class="uk-button uk-button-default uk-button-small uk-margin-small-right" type="button" href="#">Settings</button>
               <div class="uk-navbar-dropdown" uk-drop="boundary: #navbar; mode: click">
                 <ul class="uk-nav uk-navbar-dropdown-nav">
-                  <li class="uk-active"><a href="#">Active</a></li>
-                  <li><a href="#">About the Washburn Lab</a></li>
-                  <li><a href="#modal-sections" uk-toggle>Current Vector</a></li>
+                  <li class="uk-active"><a href="#">About</a></li>
                   <li><a href="#">Saved HFR Locations</a></li>
+                  <li class="uk-nav-divider"></li>
                   <li class="uk-nav-header">Header</li>
                   <li><a href="#">Documentation</a></li>
                   <li><a href="#">How to Use this App</a></li>
-                  <li class="uk-nav-divider"></li>
-                  <li><a href="#">Item</a></li>
                 </ul>
               </div>
             </li>
@@ -532,13 +562,7 @@
                           </select>
                         <br>
                       </div>
-                      <!--<input class="uk-button-small uk-button-primary uk-margin-large-left" type="submit" value="Update">-->
                     </form>
-                  </div>
-                </li>
-                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Overlays</a>
-                  <div class="uk-accordion-content">
-                    <p>Hello World</p>
                   </div>
                 </li>
                 <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Coordinate Locator</a>
@@ -549,12 +573,17 @@
                         <br><br>
                         Longitude:  <input class="uk-input uk-form-width-small" name="long" onchange="setCoordinates()" type="number" step="0.001" placeholder="Longitude">
                         <br><br>
-                        <button class="uk-button uk-button-primary uk-button-small" onclick="setCoordinatesHome()">Home Coordinates</button>
                       </div>  
                     </form>
+                    <button class="uk-button uk-button-primary uk-button-small uk-margin-left" onclick="setCoordinatesHome()">Back Home</button>
                   </div>
                 </li>
                 <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Stations</a>
+                  <div class="uk-accordion-content">
+                    <p>Hello World</p>
+                  </div>
+                </li>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Overlays</a>
                   <div class="uk-accordion-content">
                     <p>Hello World</p>
                   </div>
@@ -565,32 +594,19 @@
       </div>
     </div>
 
-  <!--Card?-->
-  <!--
-  <div class="uk-card uk-card-small uk-card-default uk-position-bottom-left uk-width-1-3" style="position: absolute; bottom: 2vh; left: 1vw">
-    <div class="uk-card-header">
-      <h6 class="uk-card-title">Title here</h6>
-    </div>
-    <div class="uk-card-body">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-    </div>
-  </div>-->
-
-
-  
-  <!--Modal?-->
-  <!--
-  <div id="modal-sections" uk-modal>
-      <div class="uk-modal-dialog">
-          <button class="uk-modal-close-default" type="button" uk-close></button>
-          <div class="uk-modal-header">
-              <h2 class="uk-modal-title">Modal Title</h2>
-          </div>
-          <div class="uk-modal-body">
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-          </div>
+    <div class="uk-notification uk-notification-bottom-left" style="display: block; width: 70vw; z-index: 0; margin-left: 0px; margin-bottom: 4vh">
+      <div class="uk-notification-message" id="curVectorInfo" style="display: none; opacity: 1; margin-bottom: 0px; padding: 8px" onclick="hideVectorInfo()"> 
+          <svg width="14" height="14" style="float: right"viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" data-svg="close-icon">
+            <line fill="none" stroke="#000" stroke-width="1.1" x1="1" y1="1" x2="9" y2="9"></line>
+            <line fill="none" stroke="#000" stroke-width="1.1" x1="9" y1="1" x2="1" y2="9"></line>
+          </svg>
+        <div class="uk-text-small" style="line-height: 100%;">
+            <span class="uk-text-primary uk-text-bold">Current Vector</span><br>
+            Coordinates: <span id="curCoord"></span><br>
+            Components <span id="curVector"></span><br>
+            <span id="curPFX"></span>, Resolution: <span id="curRes"></span>
+        </div>
       </div>
-  </div>
--->
+    </div>
 </body>
 </html>
