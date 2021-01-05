@@ -12,6 +12,7 @@
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <link rel="icon" sizes="192x192" href="images/android-icon.png">
 
+    <link rel="stylesheet" type="text/css" href="css/index.css">
     <script src="js/index.js"></script>
 
     <!--UIKit Dependencies-->
@@ -32,10 +33,6 @@
       window.addEventListener('orientationchange', () => {
         screen.orientation.angle = 0;
       });
-
-      screen.lockOrientation("portrait-primary");
-      screen.mozLockOrientation("portrait-primary");
-      screen.msLockOrientation("portrait-primary");
 
       // The GMap3 object
       var map = null;
@@ -140,10 +137,8 @@
               <button class="uk-button uk-button-default uk-button-small uk-margin-small-right" type="button" href="#">Settings</button>
               <div class="uk-navbar-dropdown" uk-drop="boundary: #navbar; mode: click">
                 <ul class="uk-nav uk-navbar-dropdown-nav">
-                  <li class="uk-active"><a href="#">About</a></li>
+                  <li class="uk-active"><a href="#">About (In Progress)</a></li>
                   <li><a href="#">Saved HFR Locations</a></li>
-                  <li class="uk-nav-divider"></li>
-                  <li class="uk-nav-header">Header</li>
                   <li><a href="#">Documentation</a></li>
                   <li><a href="#">How to Use this App</a></li>
                 </ul>
@@ -324,23 +319,29 @@
                     <button class="uk-button uk-button-primary uk-button-small uk-margin-left" onclick="setCoordinatesHome()">Back Home</button>
                   </div>
                 </li>
+                
                 <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Stations</a>
                   <div class="uk-accordion-content">
-                    <p>Hello World</p>
+                    <div class="uk-margin-left">
+                      <p>In Progress</p>
+                    </div>
                   </div>
                 </li>
                 <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Overlays</a>
                   <div class="uk-accordion-content">
-                    <p>Hello World</p>
+                    <div class="uk-margin-left">
+                      <p>In Progress</p>
+                    </div>
                   </div>
                 </li>
+              
               </ul>
 
         </ul>
       </div>
     </div>
 
-    <div class="uk-notification uk-notification-bottom-left" style="display: block; width: 70vw; z-index: 0; margin-left: 0px; margin-bottom: 4vh">
+    <div id="notification" class="uk-notification uk-notification-bottom-left">  
       <div class="uk-notification-message" id="curVectorInfo" style="display: none; opacity: 1; margin-bottom: 0px; padding: 8px" onclick="hideVectorInfo()"> 
           <svg width="14" height="14" style="float: right"viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" data-svg="close-icon">
             <line fill="none" stroke="#000" stroke-width="1.1" x1="1" y1="1" x2="9" y2="9"></line>

@@ -5,7 +5,6 @@
        * Google, but it's been years, and no support.
        */
 function lluvAtClick(obj) {
-    console.log(obj);
     var pfx = "";
     if (document.getElementById('hourly').checked == true) {
         pfx = "Hourly";
@@ -56,10 +55,8 @@ function displayUTCTime() {
 function displayTimestamp(ts) {
     var frm = document.forms["timestep"];
     var d = new Date(Number(ts) * 1000);
-    console.log(ts + ", " + d);
     frm["ts"].disabled = false;
     frm["ts"].value = d.gmstrftime("%m-%d-%Y %H:%M:%S UTC");
-    console.log(frm["ts"].value);
     frm["ts"].disabled = true;
 }
 
@@ -69,7 +66,6 @@ function displayTimestamp(ts) {
  */
 function incrementTime(dt) {
     ts = overlay.getLatestTimestamp();
-    console.log("timestamp: " + overlay.getTimestamp());
     overlay.setTimestamp(Math.min(ts, overlay.getTimestamp() + dt));
 }
 
@@ -215,8 +211,6 @@ function setCoordinates() {
         return null;
     }
 
-    console.log("(" + frm['lat'].value + ", " + frm['long'].value + ")");
-
     if (frm['lat'].value != "" && frm['long'].value != "") {
         map.setZoom(11);
         map.setCenter({
@@ -235,7 +229,6 @@ function setCoordinatesHome() {
 }
 
 function displayVectorInfo(obj) {
-    console.log(obj);
     var pfx = "";
     if (document.getElementById('hourly').checked == true) {
         pfx = "Hourly";
