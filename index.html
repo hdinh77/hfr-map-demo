@@ -9,6 +9,9 @@
   <meta name="copyright" content="©2020 Coastal Observing Research and Development Center">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="icon" sizes="192x192" href="images/android-icon.png">
+
 
   <!--
   <link rel="stylesheet" href="css/index.css" />
@@ -103,7 +106,7 @@
         // shortcut to get image bar to render with current settings
         doSubmitColor();
       }
-  
+
       /**
        * Action code to handle the result of onclick.  
        * Note, a timeout is needed between clicks to prevent capturing 
@@ -372,18 +375,18 @@
       <nav class="uk-navbar-container" uk-navbar="mode: click;">
         
         <!--Nav Bar Left-->
-        <div class="uk-navbar-left">
+        <div id="control" class="uk-navbar-left">
           <ul class="uk-navbar-nav">
-            <li>
-              <button class="uk-button uk-button-default uk-button-small uk-margin-small-left uk-margin-top uk-margin-bottom" type="button" uk-toggle="target: #left-slide">Control Panel</button>
+            <li> 
+              <button class="uk-button uk-button-default uk-button-small uk-margin-small-left uk-margin-top uk-margin-bottom uk-padding-remove-horizontal" type="button" uk-toggle="target: #left-slide">&nbsp; Control Panel &nbsp;</button>
             </li>
         </div>
       
 
         <!--Logo-->
         <div class="uk-navbar-center">
-          <a class="uk-navbar-item uk-logo" href="#">
-            LOGO<!--<img style="height: 2vh" src="https://sccoos.org/wp-content/uploads/2020/06/cropped-SCCOOS_LOGO_white_medium-1-1.png" alt="logo">-->
+          <a class="uk-navbar-item uk-logo uk-margin-left" href="#">
+            <img id="logo" src="images/scoos_logo_landscape_transparent.png" alt="logo" style="height: 30px;">
           </a>
         </div>
 
