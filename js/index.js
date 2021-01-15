@@ -15,7 +15,7 @@ function lluvAtClick(obj) {
     var multiplier = getUnitMultiplier();
     var unit = getFormValueColorbar('select_unit');
 
-    alert('Latitude: ' + obj.lat + ', Longitude: ' + obj.lng + '\n' + 'Current Vector: U: ' + Number.parseFloat(obj.u / multiplier).toPrecision(3) + unit + ', V: ' + Number.parseFloat(obj.v / multiplier).toPrecision(3) + unit + '\n PFX: ' + pfx + ', Resolution: ' + getFormValueProducts('select_res'));
+    alert('Latitude: ' + obj.lat + ', Longitude: !' + obj.lng + '\n' + 'Current Vector: U: ' + Number.parseFloat(obj.u / multiplier).toPrecision(3) + unit + ', V: ' + Number.parseFloat(obj.v / multiplier).toPrecision(3) + unit + '\n PFX: ' + pfx + ', Resolution: ' + getFormValueProducts('select_res'));
 }
 
 function displayDate() {

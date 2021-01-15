@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript">
+
+        // The GMap3 object
+        var map = null;
+
+        // One single, global info window.
+        var iw = null;
+
+        // The RTVMapType object.
+        var overlay = null;
+
+        // Station markers.
+        var markers = [];
+
+
+        /**
+         * Initialize the Google map.
+         */
+        function initialize() {
+            var opts = {
+                center: new google.maps.LatLng(34.0, -120.0),
+                zoom: 8,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("map_canvas"), opts);
+
+            /**
+             * Get reference to the new overlay, so we can monitor for
+             * state (configuration) changes.
+             */
+            overlay = new RTVMapType(map);
+
+            // Show user the latest timestamp when map layer loads
+            google.maps.event.addListener(overlay, 'timechange', function (ts) {
+                displayTimestamp(ts);
+            });
+
+            // We gain access to network data once the RTVMapType loads.
+            // Let's use that data to inform the user of stations and metadata.
+            google.maps.event.addListener(overlay, 'load', function () {
+                document.getElementById("nSites").innerHTML = this.getStationCount();
+                document.getElementById("nNets").innerHTML = this.getNetworkCount();
+
+                // Create a date object from a Unix Epoch timestamp.
+                // Show the time of the latest file received.
+                var d = new Date(this.getNetworkUpdateTime() * 1000);
+                document.getElementById("latestRecord").innerHTML = d.strftime("%Y-%m-%d %H:%M:%S %Z");
+
+                // Populate a station and network drop-down.
+                document.getElementById("allSites").innerHTML = "<option>" + (this.getStations()).join("</option><option>") + "</option>";
+                document.getElementById("allNets").innerHTML = "<option>" + (this.getNetworks()).join("</option><option>") + "</option>";
+
+                // Create station markers. Set markers to not be visible by default.
+                // Use a form option to control visibility.
+                // Use time thresholds for icon coloring.
+                var ts_red = (new Date()).getTime() / 1000 - 36000; // 10 hours old.
+                var ts_ylw = (new Date()).getTime() / 1000 - 18000; //  5 hours old.
+                var stas = this.getStations();
+                for (var i = 0, n = stas.length; i < n; i++) {
+                    var stn = this.getStation(stas[i]);
+                    if (!+stn.mtime) {
+                        // ignore stations without radial files being produced.
+                        markers[i] = null;
+                        continue;
+                    }
+                    var color = (stn.mtime < ts_red) ? 'red' : ((stn.mtime < ts_ylw) ? 'ylw' : 'grn');
+                    var image = {
+                        url: 'http://maps.google.com/mapfiles/kml/paddle/' + color + '-blank.png',
+                        scaledSize: new google.maps.Size(32, 32),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(16, 31)
+                    };
+                    var latlng = new google.maps.LatLng(parseFloat(stn.lat), parseFloat(stn.lon));
+                    markers[i] = new google.maps.Marker({ map: map, position: latlng, title: stn.staname, icon: image, visible: false });
+                    markerBindInfoWindow(markers[i], getInfoWindowHtml(stn));
+                }
+                // Check the form and toggle visibility.
+                updateMarkers();
+
+            });
+
+            // Add overlay to map.
+            map.overlayMapTypes.push(overlay);
+
+            // When a user clicks on the map, an object representing
+            // the nearest neighbor of the click will be returned.
+            // The object will have properties: lat, lng, u, v.
+            // With u and v in 'cm/s'.
+            google.maps.event.addListener(map, 'click', function (mouseEvent) {
+                overlay.getVectorData(mouseEvent.latLng, lluvAtClick);
+            });
+
+            // monitor form changes to instantly update map settings.
+            initFormListeners();
+
+            // shortcut to get image bar to render with current settings
+            doSubmit();
+        }
+
+
+        /**
+         * Get a single global info window and recycle it for each marker.
+         */
+        function globalInfoWindow() {
+            iw = iw || new google.maps.InfoWindow({ map: map });
+            return iw;
+        } // END: function globalInfoWindow()
+
+
+        /**
+         * Use a closure to link a marker click to an html info window message.
+         */
+        function markerBindInfoWindow(marker, html) {
+            google.maps.event.addListener(marker, 'click', function (mouseEvent) {
+                globalInfoWindow().setContent(html);
+                globalInfoWindow().open(map, marker);
+            });
+        } // END: function markerBindInfoWindow(marker,html)
+
+
+        /**
+         * Helper function used to build infoWindowHtml for station markers.
+         */
+        function getInfoWindowHtml(stn) {
+            var html = "<table><tbody>";
+            for (var k in stn) {
+                html += "<tr><th>" + k + "</th><td>" + stn[k] + "</td></tr>";
+            }
+            html += "</tbody></table>";
+            return html;
+        } // END: function getInfoWindowHtml(stn)
+
+
+        /**
+         * Update the display whenever a form setting is changed.
+         */
+        function initFormListeners() {
+            var inp = document.getElementsByTagName("input");
+            for (var i = 0, n = inp.length; i < n; i++) {
+                inp[i].onchange = doSubmit;
+                if (inp[i].getAttribute("type") == "radio") {
+                    inp[i].onclick = function (e) {
+                        e = (!e) ? window.event : e;
+                        var t = (e.target) ? e.target : e.srcElement;
+                        t.blur();
+                    }
+                }
+            }
+            var inp = document.getElementsByTagName("select");
+            for (var i = 0, n = inp.length; i < n; i++) {
+                inp[i].onchange = doSubmit;
+            }
+
+            document.getElementById("showHideMarkers").onchange = updateMarkers;
+        } // END: function initFormListeners()
+
+
+        function updateMarkers() {
+            if (document.getElementById("showHideMarkers").checked) {
+                for (var i = 0, n = markers.length; i < n; i++) {
+                    if (markers[i]) {
+                        markers[i].setVisible(true);
+                    }
+                }
+            } else {
+                for (var i = 0, n = markers.length; i < n; i++) {
+                    if (markers[i]) {
+                        markers[i].setVisible(false);
+                    }
+                }
+            }
+        } // END: function updateMarkers()
+
+
+        /**
+         * Action code to handle the result of onclick.  
+         * Note, a timeout is needed between clicks to prevent capturing 
+         * double-click events.  I expected this to be implemented by 
+         * Google, but it's been years, and no support.
+         */
+        function lluvAtClick(obj) {
+            alert('[lat:' + obj.lat + ',lng:' + obj.lng + ',u:' + obj.u + ',v:' + obj.v + ']');
+        }
+
+        /**
+         * Get the value of radio, drop-down or text input without fuss.
+         */
+        function getFormValue(field) {
+            var frm = document.forms['something'];
+            if (!frm[field]) {
+                return null;
+            }
+            if (typeof (frm[field].value) != "undefined") {
+                return frm[field].value;
+            }
+            if (frm[field].length != "undefined") {
+                for (var i = 0, n = frm[field].length; i < n; i++) {
+                    if (frm[field][i].checked) {
+                        return frm[field][i].value;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Just something to show the user what time is being displayed.
+         */
+        function displayTimestamp(ts) {
+            var frm = document.forms["something"];
+            var d = new Date(Number(ts) * 1000);
+            frm["ts"].disabled = false;
+            frm["ts"].value = d.gmstrftime("%Y-%m-%d %H:%M:%S UTC");
+            frm["ts"].disabled = true;
+        }
+
+        /**
+         * Example accessor for updating time without extending 
+         * beyong most recent available.
+         */
+        function setTime(dt) {
+            ts = overlay.getLatestTimestamp();
+            overlay.setTimestamp(Math.min(ts, overlay.getTimestamp() + dt));
+        }
+
+        /**
+         * Example accessors for updating rtv configuration.
+         */
+        function doSubmit() {
+            if (getFormValue('pfx') == 'h') {
+                overlay.setHourly();
+            } else {
+                overlay.setAveraged();
+            }
+            overlay.setResolution(getFormValue('res'));
+            overlay.setColorRange(getFormValue('min'), getFormValue('max'));
+            overlay.setColorScheme(getFormValue('colors'));
+            overlay.setTimestamp(Math.min(overlay.getLatestTimestamp(), overlay.getTimestamp()));
+
+            var img = document.getElementById("colorbar");
+            img.src = overlay.getColorbarUrl();
+        }
+    </script>
+
+</head>
+
+</html>

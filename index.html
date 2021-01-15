@@ -39,6 +39,9 @@
   
       // The RTVMapType object.
       var overlay = null;
+
+      // The marker object
+      var marker = null;
   
   
       /**
@@ -56,25 +59,18 @@
             position: google.maps.ControlPosition.RIGHT_BOTTOM,
           },
           mapTypeId: google.maps.MapTypeId.TERRAIN,
-          /*
-          zoomControl: true,
-          zoomControlOptions: {
-            position: google.maps.ControlPosition.LEFT_BOTTOM,
-            style: google.maps.ZoomControlStyle.SMALL
-          },
-          */
           controlSize: 20
         };
         map = new google.maps.Map(document.getElementById("map_canvas"), opts);
-  
-  
-  
+
         /**
-         * Get reference to the new overlay, so we can monitor for
-         * state (configuration) changes.
+         * Initialize new overlay
          */
         overlay = new RTVMapType(map);
-  
+
+
+
+        /*---------------------------------------------------------------------*/
         // Show user the latest timestamp when map layer loads
         google.maps.event.addListener(overlay, 'timechange', function (ts) {
           displayTimestamp(ts);
@@ -87,21 +83,60 @@
         displayUTCTime();
         setInterval(displayUTCTime, 1000);
   
-  
         // Add overlay to map.
         map.overlayMapTypes.push(overlay);
   
+        /*-------------------------------------------------------------------*/
         // When a user clicks on the map, an object representing
         // the nearest neighbor of the click will be returned.
         // The object will have properties: lat, lng, u, v.
         // With u and v in 'cm/s'.
         google.maps.event.addListener(map, 'click', function (mouseEvt) {
-          // overlay.getVectorData(mouseEvt.latLng, lluvAtClick);
-          overlay.getVectorData(mouseEvt.latLng, displayVectorInfo);
+          overlay.getVectorData(mouseEvt.latLng, placeMarker);
         });
+
+
+        /*-------------------------------------------------------------------*/
+
+
+
   
         // shortcut to get image bar to render with current settings
         doSubmitColor();
+
+        
+      }
+
+      console.log("Stations: " + this.getStations());
+
+      function placeMarker(obj) {
+        if(marker != null) {
+          marker.setMap(null);
+        }
+      
+        marker = new google.maps.Marker({
+          /*strokeColor: "#FFFFFF",
+          strokeOpacity: 0.5,
+          strokeWeight: 5,
+          fillColor: "#000000",
+          fillOpacity: 1,
+          radius: 1000,*/
+          map,
+          position: { lat: parseFloat(obj.lat),
+                      lng: parseFloat(obj.lng)},
+          icon: new google.maps.MarkerImage("images/location-icon-navy.svg",
+            null, 
+            null,
+            null,
+            new google.maps.Size(30, 32)
+          ),
+          strokeColor: "#F32Fa4F"
+          
+        });
+
+        console.log("we got here");
+
+        displayVectorInfo(obj);
       }
     </script>
 </head>
@@ -334,7 +369,14 @@
                     </div>
                   </div>
                 </li>
-              
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Background Color of the Ocean</a>
+                  <div class="uk-accordion-content">
+                    <div class="uk-margin-left">
+                      <p>In Progress</p>
+                      <p>Maybe add a slider bar to change rbg from 0-255 blue</p>
+                    </div>
+                  </div>
+                </li>
               </ul>
 
         </ul>
