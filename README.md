@@ -1,6 +1,5 @@
 # High Frequency Map Demo
- - created by Heather Dinh
- - Hosted on Github Pages: http://hdinh.tech/hfr-map-demo
+### http://hdinh.tech/hfr-map-demo
 
 ## About
  - The High Frequency Radar Map web application displays surface current vector overlays gathered from data across the coastlines of California from SCCOOS, the Southern California Coastal Ocean Observing System.
@@ -14,4 +13,6 @@
  - HFRADAR Maps API: http://cordc.ucsd.edu/projects/mapping/api/
  - UIKit CSS Component Library
  - http-server to host server for site testing
+ 
+created by Heather Dinh
 
