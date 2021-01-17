@@ -1,9 +1,14 @@
+// index.js for hfr-map-demo
+
+window.addEventListener('load', (event) => {
+    console.log('page is fully loaded');
+});
+
 /**
-       * Action code to handle the result of onclick.  
-       * Note, a timeout is needed between clicks to prevent capturing 
-       * double-click events.  I expected this to be implemented by 
-       * Google, but it's been years, and no support.
-       */
+ * Action code to handle the result of onclick.  
+ * Note, a timeout is needed between clicks to prevent capturing 
+ * double-click events.
+ */
 function lluvAtClick(obj) {
     var pfx = "";
     if (document.getElementById('hourly').checked == true) {
@@ -47,6 +52,8 @@ function displayUTCTime() {
         ifZeroHour = "0";
     }
     document.getElementById("utc-time").innerHTML = "  " + ifZeroHour + date.getUTCHours() + ":" + ifZeroMin + date.getUTCMinutes() + ":" + ifZeroSec + date.getUTCSeconds() + " (GMT)";
+    displayStationNetworkCount();
+    setStationPlacemarks();
 }
 
 /**
@@ -198,12 +205,11 @@ function changeColorRange() {
 function doSubmitColor() {
     changeColorScheme();
     changeColorRange();
-    changeUnit();
 }
 
 /**
-   * Center the map at given latitude/longitude
-   */
+ * Center the map at given latitude/longitude
+ */
 
 function setCoordinates() {
     var frm = document.forms['coordinates'];
@@ -233,19 +239,89 @@ function displayVectorInfo(obj) {
     if (document.getElementById('hourly').checked == true) {
         pfx = "Hourly";
     } else {
-        pfx = "Averaged";
+        pfx = "25hr Average";
     }
 
     var multiplier = getUnitMultiplier();
     var unit = getFormValueColorbar('select_unit');
 
     document.getElementById("curVectorInfo").style.display = "block";
-    document.getElementById("curCoord").innerHTML = '(' + obj.lat + ', ' + obj.lng + ')';
-    document.getElementById("curVector").innerHTML = '(' + unit + '): u: ' + Number.parseFloat(obj.u / multiplier).toPrecision(3) + ', v: ' + Number.parseFloat(obj.v / multiplier).toPrecision(3);
+    document.getElementById("curTitle").innerHTML = "Current Vector";
+    document.getElementById("curCoord").innerHTML = 'Coordinates: (' + obj.lat + ', ' + obj.lng + ')';
+    document.getElementById("curVector").innerHTML = 'Components (' + unit + '): u: ' + Number.parseFloat(obj.u / multiplier).toPrecision(3) + ', v: ' + Number.parseFloat(obj.v / multiplier).toPrecision(3);
     document.getElementById("curPFX").innerHTML = pfx;
-    document.getElementById("curRes").innerHTML = getFormValueProducts('select_res');
+    document.getElementById("curRes").innerHTML = ', Resolution: ' + getFormValueProducts('select_res');
+    document.getElementById("curLink").innerHTML = "";
 }
 
 function hideVectorInfo() {
     document.getElementById("curVectorInfo").style.display = "none";
+}
+
+function displayStationNetworkCount() {
+    document.getElementById("stationCount").innerHTML = overlay.getStationCount();
+    document.getElementById("networkCount").innerHTML = overlay.getNetworkCount();
+}
+
+/* Loading stations first time */
+function loadStations() {
+    stations = overlay.getStations();
+    networks = overlay.getNetworks();
+    
+    var red = (new Date()).getTime() / 1000 - 36000; // 10 hours old.
+    var yellow = (new Date()).getTime() / 1000 - 18000; //  5 hours old.
+    var white = (new Date()).getTime() / 1000 - 864000; // 10 days old
+
+    
+    for(var i = 0; i < stations.length; i++){
+        var cur = overlay.getStation(stations[i]);
+        if(!+cur.time) {
+            stationMarkers[i] = null;
+            continue;
+        }
+
+        var curTime = cur.time;
+        var colorURL = "images/location-icon-" + (curTime < white ? "white" : (curTime < red ? "red" : (curTime < yellow ? "yellow" : "green"))) + ".svg";
+
+        stationMarkers[i] = new google.maps.Marker({
+            map,
+            position: { lat: parseFloat(cur.lat),
+                        lng: parseFloat(cur.lon)}, 
+            icon: new google.maps.MarkerImage(colorURL, null, null, null,
+              new google.maps.Size(28, 26)
+            ),
+        });
+
+        markerBindInfo(stationMarkers[i], cur);
+    }
+    stationsLoaded = true;
+}
+
+function displayStationInfo(obj) {
+    document.getElementById("curVectorInfo").style.display = "block";
+    document.getElementById("curTitle").innerHTML = obj.staname + " (" + obj.sta + ")";
+    document.getElementById("curCoord").innerHTML = "Coordinates: (" + Number.parseFloat(obj.lat).toFixed(4) + ", " + Number.parseFloat(obj.lon).toFixed(4) + ")";
+    document.getElementById("curVector").innerHTML = "Affliation: " + overlay.getNetwork(obj.net)[1] + " (" + overlay.getNetwork(obj.net)[0] + ")";
+    document.getElementById("curPFX").innerHTML = "Time:...";
+    document.getElementById("curRes").innerHTML = ", Age:...";
+    document.getElementById("stationLink").innerHTML = "Station Diagnostics";
+    document.getElementById("stationLink").href = "https://hfrnet.ucsd.edu/diagnostics/?p=sta&sta=" + obj.sta + "&net=" + obj.net + "&t=0";
+}
+
+/* Display station placemarks on map if checked */
+function setStationPlacemarks() {
+    if (document.getElementById('stationCheckmark').checked) {
+        if(!stationsLoaded) loadStations();
+        for (var i = 0; i < stationMarkers.length; i++) {
+            if (stationMarkers[i]) {
+                stationMarkers[i].setVisible(true);
+            }
+        }
+    } else {
+        for (var i = 0; i < stationMarkers.length; i++) {
+            if (stationMarkers[i]) {
+                stationMarkers[i].setVisible(false);
+            }
+        }
+    }
 }

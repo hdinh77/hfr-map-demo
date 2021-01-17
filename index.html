@@ -25,29 +25,15 @@
     <script type="text/javascript" src="http://cordc.ucsd.edu/js/RTV/RTVMapType.js"></script>
   
     <script>
-      window.addEventListener('load', (event) => {
-          console.log('page is fully loaded');
-      });
-
-      // screen lock
-      window.addEventListener('orientationchange', () => {
-        screen.orientation.angle = 0;
-      });
-
-      // The GMap3 object
-      var map = null;
+      var map = null;                                           // The GMap3 object
+      var overlay = null;                                       // The RTVMapType object
+      var marker = null;                                        // The marker object
+      var stations = null;                                      // The array of station callsigns (strings)
+      var networks = null;                                      // The array of networks (strings)
+      var stationMarkers = [];                                // Array of markers for each station
+      var stationsLoaded = false;                               // Set true if station objects have been loaded
   
-      // The RTVMapType object.
-      var overlay = null;
-
-      // The marker object
-      var marker = null;
-  
-  
-      /**
-       * Initialize the Google map.
-       */
-      function initialize() {
+      function initialize() {                                   // Initialize the map
         var opts = {
           center: new google.maps.LatLng(34.4, -119.8),
           zoom: 8,
@@ -61,32 +47,21 @@
           mapTypeId: google.maps.MapTypeId.TERRAIN,
           controlSize: 20
         };
+        
         map = new google.maps.Map(document.getElementById("map_canvas"), opts);
+        overlay = new RTVMapType(map);                          //Initialize map overlay
 
-        /**
-         * Initialize new overlay
-         */
-        overlay = new RTVMapType(map);
+        displayDate();                                          // Display date and current and utc times
+        displayCurTime();
+        setInterval(displayCurTime, 1000);
+        displayUTCTime();
+        setInterval(displayUTCTime, 1000);
 
-
-
-        /*---------------------------------------------------------------------*/
         // Show user the latest timestamp when map layer loads
         google.maps.event.addListener(overlay, 'timechange', function (ts) {
           displayTimestamp(ts);
         });
   
-        // Display date and current and utc times
-        displayDate();
-        displayCurTime();
-        setInterval(displayCurTime, 1000);
-        displayUTCTime();
-        setInterval(displayUTCTime, 1000);
-  
-        // Add overlay to map.
-        map.overlayMapTypes.push(overlay);
-  
-        /*-------------------------------------------------------------------*/
         // When a user clicks on the map, an object representing
         // the nearest neighbor of the click will be returned.
         // The object will have properties: lat, lng, u, v.
@@ -95,49 +70,36 @@
           overlay.getVectorData(mouseEvt.latLng, placeMarker);
         });
 
-
-        /*-------------------------------------------------------------------*/
-
-
-
-  
-        // shortcut to get image bar to render with current settings
         doSubmitColor();
-
-        
+        map.overlayMapTypes.push(overlay);                      // Add overlay to map.
       }
+      
 
-      console.log("Stations: " + this.getStations());
-
-      function placeMarker(obj) {
+      function placeMarker(obj) {                                 // On user click, places a marker down at nearest vector
         if(marker != null) {
           marker.setMap(null);
         }
       
         marker = new google.maps.Marker({
-          /*strokeColor: "#FFFFFF",
-          strokeOpacity: 0.5,
-          strokeWeight: 5,
-          fillColor: "#000000",
-          fillOpacity: 1,
-          radius: 1000,*/
           map,
           position: { lat: parseFloat(obj.lat),
-                      lng: parseFloat(obj.lng)},
-          icon: new google.maps.MarkerImage("images/location-icon-navy.svg",
-            null, 
-            null,
-            null,
+                      lng: parseFloat(obj.lng)}, 
+          icon: new google.maps.MarkerImage("images/location-icon-navy.svg", null, null, null,       // icon colors from boxy-svg.com/app
             new google.maps.Size(30, 32)
           ),
-          strokeColor: "#F32Fa4F"
-          
         });
-
-        console.log("we got here");
-
-        displayVectorInfo(obj);
+        console.log(overlay.getStation("BML1"));
+        displayVectorInfo(obj); 
       }
+
+      /* Each marker needs to be externally binded with station name */
+      function markerBindInfo(marker, obj) {
+          google.maps.event.addListener(marker, "click", () => {
+              hideVectorInfo();
+              displayStationInfo(obj);
+          });
+      }
+
     </script>
 </head>
 
@@ -327,6 +289,7 @@
                       <br>
                       <div class="uk-margin-left">
                         Units: 
+                        <br>
                           <select name="select_unit" class="uk-select uk-form-width-xsmall" onchange="changeUnit()">
                             <option value="cm/s" selected="selected">cm/s</option>
                             <option value="m/s">m/s</option>
@@ -358,7 +321,9 @@
                 <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Stations</a>
                   <div class="uk-accordion-content">
                     <div class="uk-margin-left">
-                      <p>In Progress</p>
+                      <p>Stations: <span id="stationCount"></span>
+                      <br>Networks: <span id="networkCount"></span></p>
+                      <label><input id="stationCheckmark" class="uk-checkbox" type="checkbox" onchange="setStationPlacemarks()" name="checkmark1">&nbsp; Display Station Placemarks</label>
                     </div>
                   </div>
                 </li>
@@ -369,11 +334,11 @@
                     </div>
                   </div>
                 </li>
-                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Background Color of the Ocean</a>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Ocean Background Color</a>
                   <div class="uk-accordion-content">
                     <div class="uk-margin-left">
                       <p>In Progress</p>
-                      <p>Maybe add a slider bar to change rbg from 0-255 blue</p>
+                      <!--<p>Maybe add a slider bar to change rbg from 0-255 blue</p>-->
                     </div>
                   </div>
                 </li>
@@ -384,16 +349,17 @@
     </div>
 
     <div id="notification" class="uk-notification uk-notification-bottom-left">  
-      <div class="uk-notification-message" id="curVectorInfo" style="display: none; opacity: 1; margin-bottom: 0px; padding: 8px" onclick="hideVectorInfo()"> 
-          <svg width="14" height="14" style="float: right"viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" data-svg="close-icon">
+      <div class="uk-notification-message" id="curVectorInfo" style="display: none; opacity: 1; margin-bottom: 0px; padding: 8px"> 
+          <svg width="14" height="14" style="float: right"viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" data-svg="close-icon" onclick="hideVectorInfo()">
             <line fill="none" stroke="#000" stroke-width="1.1" x1="1" y1="1" x2="9" y2="9"></line>
             <line fill="none" stroke="#000" stroke-width="1.1" x1="9" y1="1" x2="1" y2="9"></line>
           </svg>
         <div class="uk-text-small" style="line-height: 100%;">
-            <span class="uk-text-primary uk-text-bold">Current Vector</span><br>
-            Coordinates: <span id="curCoord"></span><br>
-            Components <span id="curVector"></span><br>
-            <span id="curPFX"></span>, Resolution: <span id="curRes"></span>
+            <span id="curTitle" class="uk-text-primary uk-text-bold"></span><br>
+            <span id="curCoord"></span><br>
+            <span id="curVector"></span><br>
+            <span id="curPFX"></span><span id="curRes"></span><br>
+            <span class="uk-text-primary"><a id="stationLink" href="#" target="_blank"></a></span>
         </div>
       </div>
     </div>
