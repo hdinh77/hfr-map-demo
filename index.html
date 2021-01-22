@@ -52,10 +52,10 @@
         overlay = new RTVMapType(map);                          //Initialize map overlay
 
         displayDate();                                          // Display date and current and utc times
-        displayCurTime();
         setInterval(displayCurTime, 1000);
-        displayUTCTime();
         setInterval(displayUTCTime, 1000);
+        setTimeout(displayStationNetworkCount, 500);
+        setStationPlacemarks();
 
         // Show user the latest timestamp when map layer loads
         google.maps.event.addListener(overlay, 'timechange', function (ts) {
@@ -88,7 +88,6 @@
             new google.maps.Size(30, 32)
           ),
         });
-        console.log(overlay.getStation("BML1"));
         displayVectorInfo(obj); 
       }
 
@@ -359,7 +358,7 @@
             <span id="curCoord"></span><br>
             <span id="curVector"></span><br>
             <span id="curPFX"></span><span id="curRes"></span><br>
-            <span class="uk-text-primary"><a id="stationLink" href="#" target="_blank"></a></span>
+            <span class="uk-text-primary"><a id="stationLink" href="#" target="_blank"> </a></span>
         </div>
       </div>
     </div>

@@ -51,9 +51,7 @@ function displayUTCTime() {
     if (date.getUTCHours() < 10) {
         ifZeroHour = "0";
     }
-    document.getElementById("utc-time").innerHTML = "  " + ifZeroHour + date.getUTCHours() + ":" + ifZeroMin + date.getUTCMinutes() + ":" + ifZeroSec + date.getUTCSeconds() + " (GMT)";
-    displayStationNetworkCount();
-    setStationPlacemarks();
+    document.getElementById("utc-time").innerHTML = "  " + ifZeroHour + date.getUTCHours() + ":" + ifZeroMin + date.getUTCMinutes() + ":" + ifZeroSec + date.getUTCSeconds() + " (GMT)";   
 }
 
 /**
@@ -251,7 +249,7 @@ function displayVectorInfo(obj) {
     document.getElementById("curVector").innerHTML = 'Components (' + unit + '): u: ' + Number.parseFloat(obj.u / multiplier).toPrecision(3) + ', v: ' + Number.parseFloat(obj.v / multiplier).toPrecision(3);
     document.getElementById("curPFX").innerHTML = pfx;
     document.getElementById("curRes").innerHTML = ', Resolution: ' + getFormValueProducts('select_res');
-    document.getElementById("curLink").innerHTML = "";
+    document.getElementById("stationLink").innerHTML = "";
 }
 
 function hideVectorInfo() {
@@ -302,10 +300,13 @@ function displayStationInfo(obj) {
     document.getElementById("curTitle").innerHTML = obj.staname + " (" + obj.sta + ")";
     document.getElementById("curCoord").innerHTML = "Coordinates: (" + Number.parseFloat(obj.lat).toFixed(4) + ", " + Number.parseFloat(obj.lon).toFixed(4) + ")";
     document.getElementById("curVector").innerHTML = "Affliation: " + overlay.getNetwork(obj.net)[1] + " (" + overlay.getNetwork(obj.net)[0] + ")";
-    document.getElementById("curPFX").innerHTML = "Time:...";
-    document.getElementById("curRes").innerHTML = ", Age:...";
+    let stationTime = new Date(parseFloat(obj.time)).toLocaleTimeString();
+    document.getElementById("curPFX").innerHTML = "Time: " + stationTime;
+    document.getElementById("curRes").innerHTML = ", Age: " + "In Progress";//Math.floor((Date.now() - parseFloat(obj.time)) / 3600) + ":" + Math.floor((Date.now() - parseFloat(obj.time)) % 1000);
     document.getElementById("stationLink").innerHTML = "Station Diagnostics";
     document.getElementById("stationLink").href = "https://hfrnet.ucsd.edu/diagnostics/?p=sta&sta=" + obj.sta + "&net=" + obj.net + "&t=0";
+    console.log(obj);
+    console.log(new Date(parseFloat(obj.time)).getTime());
 }
 
 /* Display station placemarks on map if checked */
