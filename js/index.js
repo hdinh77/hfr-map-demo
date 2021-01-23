@@ -266,9 +266,9 @@ function loadStations() {
     stations = overlay.getStations();
     networks = overlay.getNetworks();
     
-    var red = (new Date()).getTime() / 1000 - 36000; // 10 hours old.
-    var yellow = (new Date()).getTime() / 1000 - 18000; //  5 hours old.
-    var white = (new Date()).getTime() / 1000 - 864000; // 10 days old
+    var yellow = (new Date()).getTime() / 1000 - 86400; //  24 hours old.
+    var red = (new Date()).getTime() / 1000 - 172800; // 2 days old.
+    var white = (new Date()).getTime() / 1000 - 604800; // 7 days old
 
     
     for(var i = 0; i < stations.length; i++){
