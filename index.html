@@ -14,6 +14,7 @@
 
     <link rel="stylesheet" type="text/css" href="css/index.css">
     <script src="js/index.js"></script>
+    <script src="js/platforms.js"></script>
 
     <!--UIKit Dependencies-->
     <link rel="stylesheet" type="text/css" href="css/uikit.min.css" />
@@ -30,8 +31,11 @@
       var marker = null;                                        // The marker object
       var stations = null;                                      // The array of station callsigns (strings)
       var networks = null;                                      // The array of networks (strings)
-      var stationMarkers = [];                                // Array of markers for each station
+      var platforms = null;                                     // The array of oil platforms and coordinates (objects)
+      var stationMarkers = [];                                  // Array of markers for each station
+      var platformMarkers = [];                                 // Array of markers for each platform
       var stationsLoaded = false;                               // Set true if station objects have been loaded
+      var platformsLoaded = false;                              // Set true if platform objects have been loaded
   
       function initialize() {                                   // Initialize the map
         var opts = {
@@ -45,7 +49,8 @@
             position: google.maps.ControlPosition.RIGHT_BOTTOM,
           },
           mapTypeId: google.maps.MapTypeId.TERRAIN,
-          controlSize: 20
+          controlSize: 20,
+          backgroundColor: 'none'
         };
         
         map = new google.maps.Map(document.getElementById("map_canvas"), opts);
@@ -97,6 +102,14 @@
           google.maps.event.addListener(marker, "click", () => {
               hideVectorInfo();
               displayStationInfo(obj);
+          });
+      }
+
+      /* Each marker needs to be externally binded with platform name */
+      function platformBindInfo(marker, obj) {
+          google.maps.event.addListener(marker, "click", () => {
+              hideVectorInfo();
+              displayPlatformInfo(obj);
           });
       }
 
@@ -252,7 +265,7 @@
                     </form>
                   </div>
                 </li>
-                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Colorbar</a>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Color Scheme</a>
                   <div class="uk-accordion-content uk-margin-small-left">
                     <form name="colorbar" method="post" action="javascript:doSubmitColor()">
                       <img class="uk-margin-left"
@@ -287,6 +300,22 @@
                         </span>
                       </div>
                       <br>
+                      <div class="uk-margin-left uk-margin-right">
+                        Ocean Color
+                        <br>
+                        <!--
+                        <div id="oceancolorbar" style="background-color: rgb(3, 150, 252); font-size: 16px;">
+                          150
+                        </div>
+                        <input id="oceancolorrange" class="uk-range" type="range" value="150" min="0" max="255" step="1" onchange="changeOceanColor()">
+                      -->
+                        Two options: (can't use slider bar)
+                        <br>
+                          - change color of ocean based on zoom
+                          <br>
+                          - set different initial color of ocean
+                      </div>
+                      <br>
                       <div class="uk-margin-left">
                         Units: 
                         <br>
@@ -308,37 +337,25 @@
                   <div class="uk-accordion-content">
                     <form name="coordinates" method="post">
                       <div class="uk-margin-left">
-                        Latitude:  <input class="uk-input uk-form-width-small" name="lat" onchange="setCoordinates()" type="number" step="0.001" placeholder="Latitude">
+                        Latitude:  <input class="uk-input uk-form-width-small" name="lat" type="number" step="0.001" placeholder="Latitude">
                         <br><br>
-                        Longitude:  <input class="uk-input uk-form-width-small" name="long" onchange="setCoordinates()" type="number" step="0.001" placeholder="Longitude">
+                        Longitude:  <input class="uk-input uk-form-width-small" name="long" type="number" step="0.001" placeholder="Longitude">
                         <br><br>
                       </div>  
                     </form>
-                    <button class="uk-button uk-button-primary uk-button-small uk-margin-left" onclick="setCoordinatesHome()">Back Home</button>
+                    <a class="uk-button uk-button-text uk-button-small uk-text-small uk-margin-left" onclick="setCoordinatesHome()"><u>Back Home</u></a>
+                    <button class="uk-button uk-button-secondary uk-button-small uk-margin-left" onclick="setCoordinates()">Submit</button>
                   </div>
                 </li>
                 
-                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Stations</a>
+                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Stations and Oil Platforms</a>
                   <div class="uk-accordion-content">
                     <div class="uk-margin-left">
                       <p>Stations: <span id="stationCount"></span>
                       <br>Networks: <span id="networkCount"></span></p>
                       <label><input id="stationCheckmark" class="uk-checkbox" type="checkbox" onchange="setStationPlacemarks()" name="checkmark1" checked>&nbsp; Display Station Placemarks</label>
-                    </div>
-                  </div>
-                </li>
-                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Overlays</a>
-                  <div class="uk-accordion-content">
-                    <div class="uk-margin-left">
-                      <p>In Progress</p>
-                    </div>
-                  </div>
-                </li>
-                <li><a class="uk-text-muted uk-margin-small-left uk-text-capitalize uk-text-default uk-accordion-title" href="#">Ocean Background Color</a>
-                  <div class="uk-accordion-content">
-                    <div class="uk-margin-left">
-                      <p>In Progress</p>
-                      <!--<p>Maybe add a slider bar to change rbg from 0-255 blue</p>-->
+                      <br>
+                      <label><input id="platformCheckmark" class="uk-checkbox" type="checkbox" onchange="setPlatformPlacemarks()" name="checkmark1">&nbsp; Display Oil Platform Placemarks</label>
                     </div>
                   </div>
                 </li>
@@ -352,6 +369,7 @@
                       <p><img src="images/location-icon-white.svg" height="32px" width="30px"> 7 days</p>
                       <hr class="uk-nav-divider">
                       <p><img src="images/location-icon-navy.svg" height="32px" width="30px"> Current Selected Vector</p>
+                      <p><img src="images/oil-platform.png" height="32px" width="30px"> SoCal Oil platform</p>                      
                     </div>
                   </div>
                 </li>

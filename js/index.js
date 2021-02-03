@@ -205,6 +205,20 @@ function doSubmitColor() {
     changeColorRange();
 }
 
+function changeOceanColor() {
+    var num = document.getElementById("oceancolorrange").value;
+    document.getElementById("oceancolorbar").innerHTML = num;
+    var color;
+    if(num == 0) {
+        color = "background-color: rgb(0, 0, 0); font-size: 16px;";
+    }else if(num == 255) {
+        color = "background-color: rgb(255, 255, 255); font-size: 16px;";
+    }else {
+        color = "background-color: rgb(3, " + num + ", 252); font-size: 16px;";
+    }
+    document.getElementById("oceancolorbar").style = color;
+}
+
 /**
  * Center the map at given latitude/longitude
  */
@@ -232,6 +246,10 @@ function setCoordinatesHome() {
     frm['long'].value = null;
 }
 
+/*
+ * Current Vector
+ */
+
 function displayVectorInfo(obj) {
     var pfx = "";
     if (document.getElementById('hourly').checked == true) {
@@ -255,6 +273,10 @@ function displayVectorInfo(obj) {
 function hideVectorInfo() {
     document.getElementById("curVectorInfo").style.display = "none";
 }
+
+/*
+ * Stations
+ */
 
 function displayStationNetworkCount() {
     document.getElementById("stationCount").innerHTML = overlay.getStationCount();
@@ -326,3 +348,57 @@ function setStationPlacemarks() {
         }
     }
 }
+
+/*
+ * Oil Platforms
+ */
+
+function loadPlatforms() {
+    platforms = getPlatforms();
+
+    for(var i = 0; i < platforms.length; i++){
+        platformMarkers[i] = new google.maps.Marker({
+            map,
+            position: { lat: parseFloat(platforms[i].lat),
+                        lng: parseFloat(platforms[i].lng)}, 
+            icon: new google.maps.MarkerImage("images/oil-platform.png", null, null, null,
+              new google.maps.Size(28, 26)
+            ),
+        });
+
+        platformBindInfo(platformMarkers[i], platforms[i]);
+    }
+    platformsLoaded = true;
+}
+
+function displayPlatformInfo(obj) {
+    document.getElementById("curVectorInfo").style.display = "block";
+    document.getElementById("curTitle").innerHTML = obj.name;
+    document.getElementById("curCoord").innerHTML = "<span class='uk-text-muted'>SoCal Oil Platform</span>";
+    document.getElementById("curVector").innerHTML = "Latitude: " + Number.parseFloat(obj.lat).toFixed(4);
+    document.getElementById("curPFX").innerHTML = "Longitude: " + Number.parseFloat(obj.lng).toFixed(4);
+    document.getElementById("curRes").innerHTML = "";
+    document.getElementById("stationLink").innerHTML = "";
+    document.getElementById("stationLink").href = "";
+}
+
+
+/* Display station placemarks on map if checked */
+function setPlatformPlacemarks() {
+    getPlatforms();
+    if (document.getElementById('platformCheckmark').checked) {
+        if(!platformsLoaded) loadPlatforms();
+        for (var i = 0; i < platformMarkers.length; i++) {
+            if (platformMarkers[i]) {
+                platformMarkers[i].setVisible(true);
+            }
+        }
+    } else {
+        for (var i = 0; i < platformMarkers.length; i++) {
+            if (platformMarkers[i]) {
+                platformMarkers[i].setVisible(false);
+            }
+        }
+    }
+}
+
