@@ -322,12 +322,22 @@ function displayStationInfo(obj) {
     document.getElementById("curTitle").innerHTML = obj.staname + " (" + obj.sta + ")";
     document.getElementById("curCoord").innerHTML = "Coordinates: (" + Number.parseFloat(obj.lat).toFixed(4) + ", " + Number.parseFloat(obj.lon).toFixed(4) + ")";
     document.getElementById("curVector").innerHTML = "Affliation: " + overlay.getNetwork(obj.net)[1] + " (" + overlay.getNetwork(obj.net)[0] + ")";
-    let stationTime = new Date(parseFloat(obj.time)).toLocaleTimeString();
-    document.getElementById("curPFX").innerHTML = "Time: " + stationTime;
-    document.getElementById("curRes").innerHTML = ", Age: " + "In Progress";//Math.floor((Date.now() - parseFloat(obj.time)) / 3600) + ":" + Math.floor((Date.now() - parseFloat(obj.time)) % 1000);
+    let diff = Math.floor(Date.now() / 1000) - parseFloat(obj.time);
+    let hour = Math.floor(diff / 3600);
+    if(hour >= 24) {
+        document.getElementById("curPFX").innerHTML = "Age: " + Math.floor(hour / 24) + " days, ";
+        hour = hour % 24;
+    }else {
+        document.getElementById("curPFX").innerHTML = "Age: ";
+    }
+    diff = diff % (hour * 3600);
+    let minute = Math.floor(diff / 60);
+    document.getElementById("curRes").innerHTML = hour + " hours, " + minute + " minutes";
     document.getElementById("stationLink").innerHTML = "Station Diagnostics";
     document.getElementById("stationLink").href = "https://hfrnet.ucsd.edu/diagnostics/?p=sta&sta=" + obj.sta + "&net=" + obj.net + "&t=0";
     console.log(obj);
+    console.log(Math.floor(Date.now() / 1000));
+    console.log(parseFloat(obj.time));
     console.log(new Date(parseFloat(obj.time)).getTime());
 }
 
