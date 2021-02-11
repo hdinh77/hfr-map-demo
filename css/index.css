@@ -6,12 +6,41 @@
     margin-bottom: 4vh
 }
 
+#dropdownmenu {
+    width: 200px;
+}
+
+#resourceimage {
+    width: 100vw;
+    height: 30vh;
+    background-size: 100vw 30vh;
+    background-repeat: no-repeat;
+    background-image: url("../images/oceanpic.jpg");
+}
+
+/* iPad screen */
+@media screen and (min-width: 750px) {
+    #resourceimage {
+        width: 100vw;
+        height: 35vh;
+        background-size: 70vw 35vh;
+    }
+}
+
+/* Laptop screen */
 @media screen and (min-width: 1100px) {
     #notification {
         width: 20vw;
     }
+
+    #resourceimage {
+        width: 100vw;
+        height: 50vh;
+        background-size: 75vw 50vh;
+    }
 }
 
+/* Mobile screen */
 @media screen and (max-width: 475px) {
     #notification {
         width: 70vw;

@@ -12,11 +12,12 @@
 
     <!--UIKit Dependencies-->
     <link rel="stylesheet" type="text/css" href="../css/uikit.min.css" />
+    <link rel="stylesheet" type="text/css" href="../css/index.css" />
     <script type="text/javascript" src="../js/uikit.min.js"></script>
     <script type="text/javascript" src="../js/uikit-icons.min.js"></script>
 </head>
 
-<body>    
+<body style="overflow-x: hidden;">    
     <!--Nav bar-->
     <div class="uk-position-relative">
         <nav class="uk-navbar-container" uk-navbar="mode: click;">
@@ -41,15 +42,59 @@
     <br>
     <div>
         <h1 class="uk-article-title uk-margin-left">Resources</h1>
-        <img class="uk-margin-remove-left" src="../images/oceanpic.jpg" style="width: 100vw;">
+        <!--<img class="uk-margin-remove-left" src="../images/oceanpic.jpg" id="resourceimage">-->
+        <div id="resourceimage"></div>
     </div>
     <br>
     
     <article class="uk-article uk-margin-left">
-        <p class="uk-article-meta">Below are a list of resources and sites relating to the SCCOOS HFR Network.</p>
-        <a class="uk-button uk-button-primary" target="_blank" href="https://hfradar.msi.ucsb.edu/meta/index.php">HFR Radar Meta Data</a>
+        <p class="uk-text-lead">HFR Informational Links</p>
+        <p>Below are a list of resources and sites relating to the SCCOOS HFR Network.</p>
+        <a class="uk-button uk-button-primary" target="_blank" href="https://hfradar.msi.ucsb.edu/meta/index.php">HF Radar Meta Data</a>
         <br><br>
         <a class="uk-button uk-button-primary" target="_blank" href="https://hfradar.msi.ucsb.edu/comparisons/sccoos.html">SCCOOS Comparisons</a>
+        <br><br>
+        <a class="uk-button uk-button-primary" target="_blank" href="https://sccoos.org/data/autoss/timeline/?main=single&station=stearns_wharf">Automated Shore Stations</a>
+        <br><br>
+        <p class="uk-text-lead">How to Use this App</p>
+            For the best mobile experience, it is recommended to add the site to your home screen:
+                <li class="uk-margin-small-left">iOS - Click the "share" button on the bottom center menu of Safari, and scroll down to "Add to Home Screen"</li>
+                <li class="uk-margin-small-left">Android - Click the three dots in the top right corner of Google Chrome, and scroll down to "Add to home screen"</li>
+            
+                <p class="uk-text-primary">Map Functions
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">Surface Current Vectors - to 
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">HFR Stations</span>
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">Oil Platforms</span>
+                </p>
+            
+            <p class="uk-text-primary">Control Center
+                <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">1. Timestep
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">2. RTV Products</span>
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">3. Color Scheme</span>
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">4. Coordinate Locator
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">5. Stations and Oil Platforms</span>
+                    <br>
+                    <span class="uk-margin-small-left uk-text-emphasis">6. Legend</span>
+            </p>
+        <br>
+        <p class="uk-text-lead">Documentation</p>
+        <ul>
+            <li>Google Maps Javascript API</li>
+            <li>HFRADAR Maps API: <a href="http://cordc.ucsd.edu/projects/mapping/api/">http://cordc.ucsd.edu/projects/mapping/api/</a></li>
+            <li>UIKit CSS Component Library</li>
+            <li>http-server (NodejS) to host server for site testing</li>
+            <li>Hosted on <a href="https://github.com/hdinh77/hfr-map-demo">Github Pages</a></li>
+        </ul>
+        <br>
+
     </article>
 
 </body>
