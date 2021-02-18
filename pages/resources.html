@@ -46,46 +46,108 @@
         <div id="resourceimage"></div>
     </div>
     <br>
+
+    <p class="uk-margin-left">
+        For the best mobile experience, it is recommended to add the site to your home screen:
+            <br> - iOS - Click the "share" button on the bottom center menu of Safari, and scroll down to "Add to Home Screen"</li>
+            <br> - Android - Click the three dots in the top right corner of Google Chrome, and scroll down to "Add to home screen"</li>
+    </p>
     
     <article class="uk-article uk-margin-left">
         <p class="uk-text-lead">HFR Informational Links</p>
         <p>Below are a list of resources and sites relating to the SCCOOS HFR Network.</p>
         <a class="uk-button uk-button-primary" target="_blank" href="https://hfradar.msi.ucsb.edu/meta/index.php">HF Radar Meta Data</a>
         <br><br>
-        <a class="uk-button uk-button-primary" target="_blank" href="https://hfradar.msi.ucsb.edu/comparisons/sccoos.html">SCCOOS Comparisons</a>
+        <a class="uk-button uk-button-primary" target="_blank" href="https://hfradar.msi.ucsb.edu/comparisons/sccoos.html">HF Radar Quality Control Comparisons</a>
         <br><br>
         <a class="uk-button uk-button-primary" target="_blank" href="https://sccoos.org/data/autoss/timeline/?main=single&station=stearns_wharf">Automated Shore Stations</a>
         <br><br>
-        <p class="uk-text-lead">How to Use this App</p>
-            For the best mobile experience, it is recommended to add the site to your home screen:
-                <li class="uk-margin-small-left">iOS - Click the "share" button on the bottom center menu of Safari, and scroll down to "Add to Home Screen"</li>
-                <li class="uk-margin-small-left">Android - Click the three dots in the top right corner of Google Chrome, and scroll down to "Add to home screen"</li>
-            
-                <p class="uk-text-primary">Map Functions
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">Surface Current Vectors - to 
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">HFR Stations</span>
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">Oil Platforms</span>
-                </p>
-            
-            <p class="uk-text-primary">Control Center
-                <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">1. Timestep
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">2. RTV Products</span>
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">3. Color Scheme</span>
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">4. Coordinate Locator
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">5. Stations and Oil Platforms</span>
-                    <br>
-                    <span class="uk-margin-small-left uk-text-emphasis">6. Legend</span>
-            </p>
-        <br>
         <p class="uk-text-lead">Documentation</p>
+            <p class="uk-text-primary uk-text-medium">Map Functions
+                <br>
+                <ul uk-accordion class="uk-margin-left uk-margin-large-right">
+                    <li>
+                        <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">Surface Current Vectors</a>
+                        <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                            <p>      - To view the surface current vector at a particular region, simply click its location on the map, and a marker will pop up on the map at nearest data point.
+                                <br> - This also opens up a display on the bottom left corner with information including the current vector's coordinates, u-v directional components, averaged timeframe, and resolution.
+                            </p>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">HFR Stations</a>
+                        <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                            <p>
+                                -  HFR Stations are denoted on the map as green, white, yellow, and red markers. <img src="../images/location-icon-green.svg" height="18px" width="16px"><img src="../images/location-icon-white.svg" height="18px" width="16px"><img src="../images/location-icon-yellow.svg" height="18px" width="16px"><img src="../images/location-icon-red.svg" height="18px" width="16px">
+                                <br> -  The status of each station corresponds to the most recent time it was updated (more information in the "Legend" section).
+                                <br> -  Click on the station marker to view the station name, abbreviation, coordinates, network/affiliation, age, and a link to an external diagnostics page.
+                                <br> -  The station markers can also be toggled on and off in the "Stations and Oil Platforms" section of the Control Center.
+                            </p>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">Oil Platforms</a>
+                        <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                            <p>
+                                - Oil platforms (along the SoCal coast) are represented with the platform icon.<img src="../images/oil-platform.png" height="18px" width="16px">
+                                <br> - Click on the platform to view the name and coordinates.
+                                <br> - The oil platform markers can be toggled on and off in the "Stations and Oil Platforms" section of the Control Center.
+                                <br> - 
+                            </p>
+                        </div>
+                    </li>
+                </ul>                    
+            </p>
+        
+        <p class="uk-text-primary">Control Center
+            <br>
+            <ul uk-accordion class="uk-margin-left uk-margin-large-right">
+                <li>
+                    <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">Timestep</a>
+                    <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                        <p>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">RTV Products</a>
+                    <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                        <p>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">Color Scheme</a>
+                    <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                        <p>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">Coordinate Locator</a>
+                    <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                        <p>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">Stations and Oil Platforms</a>
+                    <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                        <p>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <a class="uk-accordion-title uk-text-emphasis uk-text-small" href="#">Legend</a>
+                    <div class="uk-accordion-content uk-text-secondary uk-text-lighter uk-text-small">
+                        <p>
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </p>
+        <br>
+        <p class="uk-text-lead">APIs and Libraries Used</p>
         <ul>
             <li>Google Maps Javascript API</li>
             <li>HFRADAR Maps API: <a href="http://cordc.ucsd.edu/projects/mapping/api/">http://cordc.ucsd.edu/projects/mapping/api/</a></li>
