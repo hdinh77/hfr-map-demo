@@ -1,5 +1,6 @@
 # High Frequency Map Demo
-### http://hdinh.tech/hfr-map-demo
+### Hosted on the UCSB Marine Science Institute Server
+### http://hfradar.msi.ucsb.edu/
 
 ## About
  - The High Frequency Radar Map web application displays surface current vector overlays gathered from data across the coastlines of California from SCCOOS, the Southern California Coastal Ocean Observing System.

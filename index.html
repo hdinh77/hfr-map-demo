@@ -60,8 +60,8 @@
         displayDate();                                          // Display date and current and utc times
         setInterval(displayCurTime, 1000);
         setInterval(displayUTCTime, 1000);
-        setTimeout(displayStationNetworkCount, 500);
-        setTimeout(setStationPlacemarks, 800);
+        setTimeout(displayStationNetworkCount, 1000);
+        setTimeout(setStationPlacemarks, 1000);
 
         // Show user the latest timestamp when map layer loads
         google.maps.event.addListener(overlay, 'timechange', function (ts) {
